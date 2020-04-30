@@ -60,12 +60,8 @@ public class SpiderExecutor implements Spider {
         try {
             // 随机获取浏览器代理
             int nextInt = new Random().nextInt(100);
-            int idx;
-            if (nextInt < BROWSER_AGENT.size()) {
-                idx = nextInt;
-            } else {
-                idx = nextInt % BROWSER_AGENT.size();
-            }
+            int idx = nextInt < BROWSER_AGENT.size() ? nextInt : nextInt % BROWSER_AGENT.size();
+
             document = Jsoup.connect(url).timeout(Integer.MAX_VALUE).userAgent(BROWSER_AGENT.get(idx)).get();
         } catch (IOException e) {
             System.out.println("请求失败: [" + e.getMessage() + "], 重新请求... [" + url + "]");
