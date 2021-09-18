@@ -10,21 +10,19 @@ import java.util.Objects;
 
 public class Town implements Administrative {
 
-    final AdministrativeLevel TOWN = AdministrativeLevel.TOWN;
-
     @Override
     public List<Node> parsingHtml(Document html, String url) {
         if (Objects.isNull(html)) {
             return null;
         }
-        Elements tables = html.getElementsByClass(TOWN.level + TABLE);
+        Elements tables = html.getElementsByClass(getClassName() + TABLE);
         if (tables.isEmpty()) {
             return null;
         }
 
         List<Node> nodes = new ArrayList<>();
         Element table = tables.get(0);
-        Elements trs = table.getElementsByClass(TOWN.level + TR);
+        Elements trs = table.getElementsByClass(getClassName() + TR);
         for (Element tr : trs) {
             Elements tds = tr.getElementsByTag(TD);
             if (tds.size() == 0) {
@@ -58,12 +56,17 @@ public class Town implements Administrative {
                 String nextUrl = url;
                 nextUrl = nextUrl.substring(0, url.lastIndexOf("/") + 1);
                 nextUrl += href;
-                List<Node> children = new SpiderExecutor().execute(TOWN.nextLevel(), nextUrl);
+                List<Node> children = parsingNextLevelHtml(nextUrl);;
                 node.setChildren(children);
             }
 
             nodes.add(node);
         }
         return nodes;
+    }
+
+    @Override
+    public AdministrativeLevel level() {
+        return AdministrativeLevel.TOWN;
     }
 }

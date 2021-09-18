@@ -1,25 +1,40 @@
 package com.mingrn.spider.admin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 
 public class Province implements Administrative {
 
-    final AdministrativeLevel PROVINCE = AdministrativeLevel.PROVINCE;
+    static final String SEPARATOR = File.separator;
 
-    private static int cpu_count = Runtime.getRuntime().availableProcessors();
+    static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private ThreadFactory nameFactory = new ThreadFactoryBuilder().setNameFormat("spider-pool-%d").build();
+    private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
 
-    private ExecutorService executor = new ThreadPoolExecutor(cpu_count * 2, (cpu_count + 1) * 2, 0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(1024), nameFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+    private final ThreadFactory nameFactory = new ThreadFactoryBuilder().setNameFormat("spider-pool-%d").build();
+
+    private final ExecutorService executor = new ThreadPoolExecutor(
+            CPU_COUNT * 2,
+            (CPU_COUNT + 1) * 2,
+            0L,
+            TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(),
+            nameFactory,
+            new ThreadPoolExecutor.CallerRunsPolicy()
+    );
 
     @Override
     public List<Node> parsingHtml(Document html, String url) {
@@ -27,7 +42,7 @@ public class Province implements Administrative {
             return null;
         }
 
-        Elements tables = html.getElementsByClass(PROVINCE.level + TABLE);
+        Elements tables = html.getElementsByClass(getClassName() + TABLE);
         if (tables.isEmpty()) {
             return null;
         }
@@ -35,9 +50,12 @@ public class Province implements Administrative {
         List<Future<Node>> futures = new ArrayList<>();
 
         Element table = tables.get(0);
-        Elements trs = table.getElementsByClass(PROVINCE.level + TR);
+        Elements trs = table.getElementsByClass(getClassName() + TR);
+
         for (Element tr : trs) {
+
             Elements tds = tr.getElementsByTag(TD);
+
             for (Element td : tds) {
 
                 Future<Node> future = executor.submit(() -> {
@@ -68,7 +86,7 @@ public class Province implements Administrative {
                     node.setCode(code.toString());
                     node.setName(name);
 
-                    List<Node> children = new SpiderExecutor().execute(PROVINCE.nextLevel(), nextUrl);
+                    List<Node> children = parsingNextLevelHtml(nextUrl);
                     node.setChildren(children);
                     return node;
                 });
@@ -80,25 +98,73 @@ public class Province implements Administrative {
         return threadAllDone(futures);
     }
 
+    @Override
+    public AdministrativeLevel level() {
+        return AdministrativeLevel.PROVINCE;
+    }
+
     private List<Node> threadAllDone(List<Future<Node>> futures) {
+
         List<Node> nodes = new ArrayList<>();
         while (true) {
+
+            Iterator<Future<Node>> iterator = futures.iterator();
+            while (iterator.hasNext()) {
+                final Future<Node> future = iterator.next();
+                if (future.isDone()) {
+                    try {
+                        write2File(future.get());
+                        iterator.remove();
+                    } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
             boolean isAllDown = true;
             for (Future<Node> future : futures) {
                 isAllDown &= (future.isDone() || future.isCancelled());
             }
 
             if (isAllDown) {
-                for (Future<Node> future : futures) {
-                    try {
-                        nodes.add(future.get());
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
-                    }
-                }
                 break;
             }
         }
         return nodes;
+    }
+
+    private void write2File(Node node) {
+        if (Objects.nonNull(node)) {
+
+            String writePath = System.getenv("write.path");
+            if (writePath == null || "".equals(writePath)) {
+                writePath = "/data";
+            }
+
+            String fileName = writePath + SEPARATOR + node.getCode() + SEPARATOR + ".json";
+
+            File file = new File(fileName);
+            if (!file.exists()) {
+                try {
+                    if (file.createNewFile() && file.setWritable(true)) {
+                        System.out.println("Create New File: [" + fileName + "]");
+                    }
+                } catch (IOException e) {
+                    System.out.println("Create New File [" + fileName + "] Fail");
+                    e.printStackTrace();
+                }
+            }
+
+            ObjectWriter objectWriter = OBJECT_MAPPER.writerWithDefaultPrettyPrinter();
+
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(objectWriter.writeValueAsString(node));
+                writer.flush();
+                System.out.println("Write JSON to File [" + fileName + "] Success");
+            } catch (IOException e) {
+                System.out.println("Write JSON to File [" + fileName + "] Fail");
+                e.printStackTrace();
+            }
+        }
     }
 }

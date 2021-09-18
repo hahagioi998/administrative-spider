@@ -9,55 +9,41 @@ package com.mingrn.spider.admin;
 public enum AdministrativeLevel {
 
     /** 省 */
-    PROVINCE("province"),
+    PROVINCE("province", new Province(), new City()),
 
     /** 市 */
-    CITY("city"),
+    CITY("city", new City(), new County()),
 
     /** 区县 */
-    COUNTY("county"),
+    COUNTY("county", new County(), new Town()),
 
     /** 乡镇 */
-    TOWN("town"),
+    TOWN("town", new Town(), new Village()),
 
     /** 行政村, 居委会 */
-    VILLAGE("village");
+    VILLAGE("village", new Village(), null);
 
-    public String level;
+    private final String className;
 
-    AdministrativeLevel(String level) {
+    private final Administrative level;
+
+    private final Administrative next;
+
+    AdministrativeLevel(String className, Administrative level, Administrative next) {
+        this.className = className;
         this.level = level;
+        this.next = next;
     }
 
-    public Administrative level() {
-
-        switch (this) {
-            case PROVINCE:
-                return new Province();
-            case CITY:
-                return new City();
-            case COUNTY:
-                return new County();
-            case TOWN:
-                return new Town();
-            default:
-                return new Village();
-        }
+    public String getClassName() {
+        return className;
     }
 
-    public Administrative nextLevel() {
+    public Administrative getLevel() {
+        return level;
+    }
 
-        switch (this) {
-            case PROVINCE:
-                return new City();
-            case CITY:
-                return new County();
-            case COUNTY:
-                return new Town();
-            case TOWN:
-                return new Village();
-            default:
-                return null;
-        }
+    public Administrative getNext() {
+        return next;
     }
 }

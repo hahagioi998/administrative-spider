@@ -1,12 +1,5 @@
 package com.mingrn.spider.admin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.List;
-
 /**
  * 执行Main
  *
@@ -15,39 +8,17 @@ import java.util.List;
  */
 public class Main {
 
-    static final String SEPARATOR = File.separator;
+    static final String GOV_INDEX = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2020/index.html";
 
-    static final String GOV_INDEX = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2019/index.html";
+    public static void main(String[] args) {
 
-    public static void main(String[] args) throws IOException {
-
-        String fileName = "Administrative.json";
-        String fullPath = args.length > 0 ? args[0] + SEPARATOR : System.getProperty("user.home") + SEPARATOR + "Downloads" + SEPARATOR;
-
-        File file = new File(fullPath);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-
-        file = new File(fullPath + fileName);
-        if (!file.exists()) {
-            file.createNewFile();
-            System.out.println("Create New File: [" + fullPath + fileName + "]");
-        }
-        file.setWritable(true);
-
-        ObjectMapper objectMapper = new ObjectMapper();
+        System.out.println("================ 抓取国家统计局行政区划数据 ================");
+        System.out.println("================      国家统计局URL      ================");
+        System.out.println(GOV_INDEX);
 
         Spider spider = new SpiderExecutor();
-        List<Node> nodes = spider.execute(AdministrativeLevel.PROVINCE.level(), GOV_INDEX);
-        System.out.println(nodes.toString());
 
-        String asString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(nodes);
-        System.out.println(asString);
+        spider.execute(AdministrativeLevel.PROVINCE.getLevel(), GOV_INDEX);
 
-        FileWriter writer = new FileWriter(file);
-        writer.write(asString);
-        writer.flush();
-        writer.close();
     }
 }

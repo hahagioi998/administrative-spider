@@ -10,20 +10,18 @@ import java.util.Objects;
 
 public class Village implements Administrative {
 
-    final AdministrativeLevel VILLAGE = AdministrativeLevel.VILLAGE;
-
     @Override
     public List<Node> parsingHtml(Document html, String url) {
         if (Objects.isNull(html)) {
             return null;
         }
-        Elements tables = html.getElementsByClass(VILLAGE.level + TABLE);
+        Elements tables = html.getElementsByClass(getClassName() + TABLE);
         if (tables.isEmpty()) {
             return null;
         }
         List<Node> nodes = new LinkedList<>();
         Element table = tables.get(0);
-        Elements trs = table.getElementsByClass(VILLAGE.level + TR);
+        Elements trs = table.getElementsByClass(getClassName() + TR);
         for (Element tr : trs) {
             Elements tds = tr.getElementsByTag(TD);
             if (tds.size() == 0) {
@@ -40,5 +38,10 @@ public class Village implements Administrative {
             nodes.add(node);
         }
         return nodes;
+    }
+
+    @Override
+    public AdministrativeLevel level() {
+        return AdministrativeLevel.VILLAGE;
     }
 }

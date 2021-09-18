@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public class SpiderExecutor implements Spider {
 
-    private static List<String> BROWSER_AGENT = new LinkedList<>();
+    private static final List<String> BROWSER_AGENT = new LinkedList<>();
 
     static {
         BROWSER_AGENT.add("Mozilla/5.0");
@@ -37,7 +37,7 @@ public class SpiderExecutor implements Spider {
             return null;
         }
 
-        Document document = execute(url);
+        Document document = doExecute(url);
 
         // 死循环处理
         while (document == null || document.toString().contains("请开启JavaScript并刷新该页")) {
@@ -50,12 +50,13 @@ public class SpiderExecutor implements Spider {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            document = execute(url);
+            document = doExecute(url);
         }
+
         return administrative.parsingHtml(document, url);
     }
 
-    private Document execute(String url) {
+    private Document doExecute(String url) {
         Document document = null;
         try {
             // 随机获取浏览器代理
