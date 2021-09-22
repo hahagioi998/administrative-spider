@@ -141,7 +141,7 @@ public class Province implements Administrative {
                 writePath = "/data";
             }
 
-            String fileName = writePath + SEPARATOR + node.getCode() + SEPARATOR + ".json";
+            String fileName = writePath + SEPARATOR + node.getCode() + ".json";
 
             File file = new File(fileName);
             if (!file.exists()) {
