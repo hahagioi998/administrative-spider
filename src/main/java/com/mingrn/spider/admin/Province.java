@@ -59,6 +59,7 @@ public class Province implements Administrative {
             for (Element td : tds) {
 
                 Future<Node> future = executor.submit(() -> {
+
                     Elements a = td.getElementsByTag(A);
                     if (a.isEmpty()) {
                         return null;
@@ -76,6 +77,7 @@ public class Province implements Administrative {
                         code.append("0");
                         len = code.length();
                     }
+
                     System.out.println(code + " ---- " + name);
 
                     String nextUrl = url;
@@ -119,17 +121,25 @@ public class Province implements Administrative {
                         e.printStackTrace();
                     }
                 }
+
+                if (future.isCancelled()) {
+                    iterator.remove();
+                }
             }
 
-            boolean isAllDown = true;
-            for (Future<Node> future : futures) {
-                isAllDown &= (future.isDone() || future.isCancelled());
-            }
-
-            if (isAllDown) {
+            if (futures.size() == 0) {
                 break;
             }
         }
+
+        try {
+            if (!executor.awaitTermination(10L, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         return nodes;
     }
 
