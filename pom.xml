@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <groupId>com.mingrn.spider</groupId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
     <packaging>jar</packaging>
     <modelVersion>4.0.0</modelVersion>
 
@@ -107,6 +107,7 @@
                 <configuration>
                     <googleContainerRegistryEnabled>false</googleContainerRegistryEnabled>
                     <repository>mingrn97/administrative-spider</repository>
+                    <dockerfile>Dockerfile</dockerfile>
                     <tag>${project.version}</tag>
                     <buildArgs>
                         <JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
