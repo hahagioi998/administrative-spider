@@ -109,22 +109,25 @@ public class Province implements Administrative {
 
         List<Node> nodes = new ArrayList<>();
 
-        Iterator<Future<Node>> iterator = futures.iterator();
-        while (iterator.hasNext()) {
-            final Future<Node> future = iterator.next();
-            if (future.isDone()) {
-                try {
-                    write2File(future.get());
+        do {
+            Iterator<Future<Node>> iterator = futures.iterator();
+            while (iterator.hasNext()) {
+                final Future<Node> future = iterator.next();
+                if (future.isDone()) {
+                    try {
+                        write2File(future.get());
+                        iterator.remove();
+                    } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (future.isCancelled()) {
                     iterator.remove();
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
                 }
             }
 
-            if (future.isCancelled()) {
-                iterator.remove();
-            }
-        }
+        } while (futures.size() != 0);
 
         try {
             if (!executor.awaitTermination(10L, TimeUnit.SECONDS)) {
