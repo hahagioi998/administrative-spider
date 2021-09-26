@@ -20,6 +20,7 @@ public class Main {
 
         spider.execute(AdministrativeLevel.PROVINCE.getLevel(), GOV_INDEX);
 
+        System.out.println("EXIT");
         System.exit(0);
 
     }
