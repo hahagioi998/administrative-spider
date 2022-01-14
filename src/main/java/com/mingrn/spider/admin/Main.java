@@ -8,7 +8,7 @@ package com.mingrn.spider.admin;
  */
 public class Main {
 
-    static final String GOV_INDEX = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2020/index.html";
+    static final String GOV_INDEX = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2021/index.html";
 
     public static void main(String[] args) {
 
