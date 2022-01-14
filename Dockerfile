@@ -1,4 +1,6 @@
-FROM openjdk:8-jdk
+# Use Debain:Stretch Release Version
+
+FROM openjdk:8-jdk-stretch
 
 WORKDIR /app
 
